@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TubeFetch</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app">
+        <header class="header">
+            <div class="header-content">
+                <div class="brand">
+                    <svg class="brand-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                    </svg>
+                    <h1 class="brand-title">TubeFetch</h1>
+                </div>
+                <button class="theme-toggle" id="themeToggle">
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line>
+                    </svg>
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- Search -->
+            <section class="search-section">
+                <div class="search-box">
+                    <div class="input-wrapper">
+                        <svg class="input-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M10 13a5 5 0 0 0 7.54.54l3.38 3.38a1 1 0 0 0 1.42-1.42l-3.38-3.38A5 5 0 0 0 10 13zm0 0V3m0 10a5 5 0 0 1 5-5"/>
+                            <line x1="21" y1="21" x2="15" y2="15"></line>
+                        </svg>
+                        <input type="url" id="urlInput" placeholder="Paste video link..." autocomplete="off">
+                        <button class="paste-btn" id="pasteBtn" title="Paste">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                                <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                            </svg>
+                        </button>
+                    </div>
+                    <button class="analyze-btn" id="analyzeBtn">
+                        <span class="btn-text">Analyze</span>
+                        <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Save Location -->
+            <section class="save-section" id="saveSection">
+                <div class="save-header">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    </svg>
+                    <span>Save Location</span>
+                </div>
+                <div class="path-row">
+                    <input type="file" id="dirPicker" webkitdirectory directory style="display:none">
+                    <button class="pick-dir-btn" id="pickDirBtn" title="Choose folder">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                        </svg>
+                    </button>
+                    <input type="text" id="pathInput" class="path-text" value="/sdcard/Download/TubeFetch/%(title)s.%(ext)s" placeholder="Save path...">
+                </div>
+                <div class="path-presets" id="pathPresets">
+                    <button class="preset-chip" data-path="/sdcard/Download/TubeFetch/%(title)s.%(ext)s">Downloads</button>
+                    <button class="preset-chip" data-path="/sdcard/Movies/TubeFetch/%(title)s.%(ext)s">Movies</button>
+                    <button class="preset-chip" data-path="/sdcard/Music/TubeFetch/%(title)s.%(ext)s">Music</button>
+                    <button class="preset-chip" data-path="~/storage/downloads/TubeFetch/%(title)s.%(ext)s">Termux DL</button>
+                </div>
+            </section>
+
+            <!-- Loading -->
+            <div class="loading-state" id="loadingState">
+                <div class="spinner"></div>
+                <p class="loading-text">Analyzing...</p>
+            </div>
+
+            <!-- Error -->
+            <div class="error-state" id="errorState">
+                <div class="error-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                </div>
+                <h3 class="error-title">Error</h3>
+                <p class="error-message" id="errorMessage"></p>
+                <button class="error-close" id="errorClose">Try Again</button>
+            </div>
+
+            <!-- Results -->
+            <section class="results-section" id="resultsSection">
+                <div class="playlist-header" id="playlistHeader">
+                    <div class="playlist-info">
+                        <h2 class="playlist-title" id="playlistTitle"></h2>
+                        <span class="playlist-count" id="playlistCount"></span>
+                    </div>
+                    <label class="select-all">
+                        <input type="checkbox" id="selectAll" checked>
+                        <span class="checkmark"></span>
+                        <span class="select-all-text">Select All</span>
+                    </label>
+                </div>
+                <div class="entries-grid" id="entriesGrid"></div>
+            </section>
+        </main>
+
+        <!-- Download Bar -->
+        <div class="download-bar" id="downloadBar">
+            <div class="download-bar-content">
+                <span class="download-count" id="downloadCount">0 selected</span>
+                <button class="download-btn primary" id="downloadBtn" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="7 10 12 15 17 10"></polyline>
+                        <line x1="12" y1="15" x2="12" y2="3"></line>
+                    </svg>
+                    Download
+                </button>
+            </div>
+        </div>
+
+        <!-- Confirm Modal -->
+        <div class="modal" id="confirmModal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-panel">
+                <div class="modal-header">
+                    <h3>Confirm Download</h3>
+                    <button class="modal-close" id="confirmClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="confirm-list" id="confirmList"></div>
+                    <div class="confirm-actions">
+                        <button class="btn secondary" id="confirmCancel">Cancel</button>
+                        <button class="btn primary" id="confirmDownload">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                <polyline points="7 10 12 15 17 10"></polyline>
+                                <line x1="12" y1="15" x2="12" y2="3"></line>
+                            </svg>
+                            Download
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Modal -->
+        <div class="modal" id="progressModal">
+            <div class="modal-backdrop"></div>
+            <div class="modal-panel">
+                <div class="modal-header"><h3>Downloading</h3></div>
+                <div class="modal-body">
+                    <div class="progress-file" id="progressFile">-</div>
+                    <div class="progress-status" id="progressStatus">Starting...</div>
+                    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+                    <div class="progress-pct" id="progressPct">0%</div>
+                    <button class="btn secondary" id="progressClose" style="width:100%;margin-top:12px;">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
